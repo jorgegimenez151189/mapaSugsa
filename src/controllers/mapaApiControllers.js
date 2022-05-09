@@ -23,16 +23,17 @@ const getJson = async (req, res) => {
         
             parseString(response.data, (err, results) => {
                 const data = results['soap:Envelope']['soap:Body'][0].RecuperarEstadosActualesResponse[0].RecuperarEstadosActualesResult[0].DocumentElement[0]
-                console.log(data['estadosActuales'][0].codigoEmpresa[0])
-                const a = -12
+                
                 if (data['estadosActuales'][0].codigoEmpresa[0] === -12) {
                     console.log(err)
-                }else{
+                    res.status(400).json({msg: 'error'})
+                }else if(data['estadosActuales'][0].codigoEmpresa[0] != -12){
                     res.status(200).json(data)
+                }else{
+                    res.status(400).json({msg: 'error'})
                 }
             })
-
-            res.status(400).json({msg: 'error'})
+            
 
         });
 
