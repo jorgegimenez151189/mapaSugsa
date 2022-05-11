@@ -26,11 +26,10 @@ const getJson = async (req, res) => {
                 const dato = results['soap:Envelope']['soap:Body'][0].RecuperarEstadosActualesResponse[0].RecuperarEstadosActualesResult[0].DocumentElement[0]
                 const mapa = []
 
-                console.log(dato.estadosActuales.length)
-                if (dato.estadosActuales.length < 3) {
+                if (dato.estadosActuales.length < 3 && dato.estadosActuales != undefined && dato.estadosActuales != null) {
                     const datosGuardados = await dataMapa.find()
-                    res.status(200).json(datosGuardados[0].estadosActuales)
-                }else{
+                    res.status(200).json({msg: 'Datos no actualizados'})
+                }else if(dato.estadosActuales.length > 2 && dato.estadosActuales != undefined && dato.estadosActuales != null){
                     
                     await dataMapa.deleteMany()
                     dato.estadosActuales.map((e) => {
@@ -110,19 +109,15 @@ const getJson = async (req, res) => {
                     }
                     
                     const dataMap = new dataMapa(estadosActuales)
-                    dataMap.save()
-                    
-                    res.status(200).json(estadosActuales)
-                }
+                    await dataMap.save()
+
+                    const mapaDB = await dataMapa.find()
                 
-                  
+                    res.status(200).json({msg: 'Datos actualizados'})
+                }
             })
-
-            
-
         });
 
-        
     } catch (error) {
         console.log('Error',error.message)
         res
@@ -131,8 +126,20 @@ const getJson = async (req, res) => {
     }
 }
 
+const getDB = async (req, res) => {
+    try {
+        const data = await dataMapa.find()
+        res.status(200).json(data[0].estadosActuales)
+    } catch (error) {
+        res.status(400).json(error)
+    }
+    
+    
+}
+
 module.exports = {
     getJson,
+    getDB,
 }
 
 
