@@ -111,7 +111,7 @@ const getJson = async (req, res) => {
                     const dataMap = new dataMapa(estadosActuales)
                     await dataMap.save()
 
-                    const mapaDB = await dataMapa.find()
+                    //const mapaDB = await dataMapa.find()
                 
                     res.status(200).json({msg: 'Datos actualizados'})
                 }
@@ -137,9 +137,25 @@ const getDB = async (req, res) => {
     
 }
 
+const filter = async (req, res, next) => {
+    const filters = req.query
+    const data = await dataMapa.find()
+    const filteredMapa = data[0].estadosActuales.filter(mapa => {
+        let isValid = true
+        for (key in filters) {
+            console.log(key, mapa[key], filters[key])
+            isValid = isValid && mapa[key] == filters[key]
+            console.log(isValid)
+        }
+        return isValid
+    })
+    res.send(filteredMapa)
+}
+
 module.exports = {
     getJson,
     getDB,
+    filter
 }
 
 

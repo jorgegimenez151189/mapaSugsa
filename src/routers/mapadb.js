@@ -7,4 +7,9 @@ router.get(
     mapaApiControllers.getDB
 )
 
+router.get(
+    '/mapadb/filtro',
+    mapaApiControllers.filter
+)
+
 module.exports = router
