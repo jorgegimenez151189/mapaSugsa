@@ -137,6 +137,7 @@ const getDB = async (req, res) => {
     
 }
 
+//filtrado
 const filter = async (req, res, next) => {
     const filters = req.query
     const data = await dataMapa.find()
