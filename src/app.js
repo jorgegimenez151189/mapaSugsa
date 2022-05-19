@@ -17,8 +17,9 @@ dbConnection()
 //Ruta
 app.use('/api', ApiRoutes)
 
-//Escuchar peticiones
+app.use(express.urlencoded({ extended: true }))
 
+//Escuchar peticiones
 app.get('/', (req, res) => {
     res.status(200).json({message: "Ir a la ruta /api"})
 })

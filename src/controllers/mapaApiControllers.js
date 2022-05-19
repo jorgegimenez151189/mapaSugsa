@@ -5,6 +5,7 @@ const fs = require('fs');
 const parseString = require('xml2js').parseString;
 const dataMapa = require('../models/Mapa')
 
+
 const getJson = async (req, res) => {
     try {
         
@@ -27,7 +28,6 @@ const getJson = async (req, res) => {
                 const mapa = []
 
                 if (dato.estadosActuales.length < 3 && dato.estadosActuales != undefined && dato.estadosActuales != null) {
-                    const datosGuardados = await dataMapa.find()
                     res.status(200).json({msg: 'Datos no actualizados'})
                 }else if(dato.estadosActuales.length > 2 && dato.estadosActuales != undefined && dato.estadosActuales != null){
                     
@@ -137,16 +137,13 @@ const getDB = async (req, res) => {
     
 }
 
-//filtrado
 const filter = async (req, res, next) => {
     const filters = req.query
     const data = await dataMapa.find()
     const filteredMapa = data[0].estadosActuales.filter(mapa => {
         let isValid = true
         for (key in filters) {
-            console.log(key, mapa[key], filters[key])
             isValid = isValid && mapa[key] == filters[key]
-            console.log(isValid)
         }
         return isValid
     })
