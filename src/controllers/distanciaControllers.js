@@ -3,17 +3,16 @@ require("dotenv").config();
 const axios = require('axios');
 const fs = require('fs');
 const parseString = require('xml2js').parseString;
+//Trabajar con los modelos
 const dataDistancia = require('../models/Distancia')
+const dataMapa = require('../models/Mapa')
 
 const getDistanciaSoap = async (req, res) => {
     try {
         const date = new Date()
-        const dia = '2022-05-01T00:00:00'
-        const diaHoy = date.toString()
-        console.log(diaHoy)
-        console.log(date)
-        console.log(dia)
-        const data = `<?xml version="1.0" encoding="utf-8"?>\n<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">\n  <soap:Body>\n    <RecuperarDistanciaRecorridaPorFechaYVehiculo xmlns="http://sw.smartmovepro.net/">\n      <usuario>TRANSPORTEINTMISIONERO</usuario>\n      <clave>WEBTRANSPORTEINTMISIONERO618</clave>\n      <codigoEntidad>323</codigoEntidad>\n      <codigoEmpresa>618</codigoEmpresa>\n  <fechaDesde>${dia}</fechaDesde>\n <FechaHasta>${dia}</FechaHasta>\n    <identificadorVehiculo>-1</identificadorVehiculo>\n    </RecuperarDistanciaRecorridaPorFechaYVehiculo>\n  </soap:Body>\n</soap:Envelope>`;
+        const diaHoy = date.toISOString().split('.')
+    
+        const data = `<?xml version="1.0" encoding="utf-8"?>\n<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">\n  <soap:Body>\n    <RecuperarDistanciaRecorridaPorFechaYVehiculo xmlns="http://sw.smartmovepro.net/">\n      <usuario>TRANSPORTEINTMISIONERO</usuario>\n      <clave>WEBTRANSPORTEINTMISIONERO618</clave>\n      <codigoEntidad>323</codigoEntidad>\n      <codigoEmpresa>618</codigoEmpresa>\n  <fechaDesde>${diaHoy[0]}</fechaDesde>\n <FechaHasta>${diaHoy[0]}</FechaHasta>\n    <identificadorVehiculo>-1</identificadorVehiculo>\n    </RecuperarDistanciaRecorridaPorFechaYVehiculo>\n  </soap:Body>\n</soap:Envelope>`;
         
         const config = {
           method: 'post',
@@ -48,9 +47,18 @@ const getDistanciaSoap = async (req, res) => {
                         DistanciaPorFechaVehiculo: distancia
                     }
 
-                    const dato = new dataDistancia(DistanciaPorFechaVehiculo)
-                    await dato.save()
-                    res.status(200).json(DistanciaPorFechaVehiculo)
+                    const datosGuardados = await dataDistancia.find()
+                    if (datosGuardados.length > 0) {
+                        await dataDistancia.deleteMany()
+                        const dato = new dataDistancia(DistanciaPorFechaVehiculo)
+                        await dato.save()
+                        res.status(200).json(DistanciaPorFechaVehiculo)
+                    }else{
+                        const dato = new dataDistancia(DistanciaPorFechaVehiculo)
+                        await dato.save()
+                        res.status(200).json(DistanciaPorFechaVehiculo)
+                    }
+                    
                 })
                
             })
@@ -101,14 +109,71 @@ const getDistanciaDb = async (req, res) => {
             ditanciaCamisiro = parseFloat(e.TotalDistanciasPorDia) + ditanciaCamisiro
          })
 
-        const distanciaObject = {
-            TotalDistancia : Math.trunc(totalDistancia),
-            Empresas: {
-                Tipoka: Math.trunc(ditanciaTipoka),
-                Casimiro: Math.trunc(ditanciaCamisiro),
-                Rosario: Math.trunc(ditanciaRosario)
+        //Coches
+        const resultado = await dataMapa.find()
+        let totalCoches = 0
+        resultado[0].estadosActuales.map( e => {
+            for (let i = 1; i < 40; i++) {
+                if (e.descripcionServicio.includes(i)) {
+                    totalCoches++
+                }
             }
+        
+            for (let j = 90; j < 101; j++) {
+                if (e.descripcionServicio.includes(j)) {
+                    totalCoches++
+                };
+            }
+        })
+
+        //DistaciaTipoka
+        let cochesTipoka = 0
+        const cTipoka = resultado[0].estadosActuales.filter( e => e.identificadorVehiculo.includes('T') )
+        cTipoka.map( e => {
+            cochesTipoka++
+         })
+
+        //DistaciaRosario
+        let cochesRosario = 0
+        const cRosario = resultado[0].estadosActuales.filter( e => e.identificadorVehiculo.includes('R') )
+        cRosario.map( e => {
+            cochesRosario++
+         })
+
+        //DistaciaCasimiro
+        let cocheCamisiro = 0
+        const cCasimiro = resultado[0].estadosActuales.filter( e => {
+            if (!e.identificadorVehiculo.includes('R') & !e.identificadorVehiculo.includes('T')) {
+                return e.identificadorVehiculo
+            }
+
+        })
+        cCasimiro.map( e => {
+            cocheCamisiro++
+         })
+
+
+        //Armando el objeto
+        const distanciaObject = {
+            Coches: {
+                TotalCoches: totalCoches,
+                Empresa: {
+                    Tipoka: cochesTipoka,
+                    Casimiro: cocheCamisiro,
+                    Rosario: cochesRosario
+                }
+            },
+            Distancias: {
+                TotalDistancia : Math.trunc(totalDistancia),
+                Empresas: {
+                    Tipoka: Math.trunc(ditanciaTipoka),
+                    Casimiro: Math.trunc(ditanciaCamisiro),
+                    Rosario: Math.trunc(ditanciaRosario)
+                }
+            }
+            
         }
+        
 
         res.status(200).json(distanciaObject)
     } catch (error) {
@@ -119,7 +184,7 @@ const getDistanciaDb = async (req, res) => {
 
 module.exports = {
     getDistanciaSoap,
-    getDistanciaDb
+    getDistanciaDb,
 }
 
 
