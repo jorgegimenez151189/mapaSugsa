@@ -117,7 +117,8 @@ const getDistanciaDb = async (req, res) => {
         let enHorario = 0
         let atrasado = 0
         let adelantado = 0
-
+        let sgps = 0
+        let sinconexion = 0
         resultado[0].estadosActuales.map( e => {
             if (e.descripcionServicio.length > 0) {
                 if (e.descripcionEstadoVehiculo.includes('EN HORARIO')) {
@@ -126,6 +127,10 @@ const getDistanciaDb = async (req, res) => {
                     adelantado++
                 }else if (e.descripcionEstadoVehiculo.includes('ATRASADO')) {
                     atrasado++
+                }else if (e.descripcionEstadoVehiculo.includes('SGPS')) {
+                    sgps++
+                }else if (e.descripcionEstadoVehiculo.includes('SIN CONEXIÓN')) {
+                    sinconexion++
                 }
             }
         })
@@ -323,6 +328,8 @@ const getDistanciaDb = async (req, res) => {
                 }
             },
             Estado: {
+                SGPS: sgps,
+                SinConexion: sinconexion,
                 EnHorarios: {
                     EnHorario: enHorario,
                     Empresas:{
