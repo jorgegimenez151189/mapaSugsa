@@ -109,39 +109,156 @@ const getDistanciaDb = async (req, res) => {
             ditanciaCamisiro = parseFloat(e.TotalDistanciasPorDia) + ditanciaCamisiro
          })
 
-        //Coches
+
+        //Base de datos Mapas
         const resultado = await dataMapa.find()
-        let totalCoches = 0
+
+        //EnHorario-Atrasado-Adelantado
+        let enHorario = 0
+        let atrasado = 0
+        let adelantado = 0
+
         resultado[0].estadosActuales.map( e => {
-            for (let i = 1; i < 40; i++) {
-                if (e.descripcionServicio.includes(i)) {
-                    totalCoches++
+            if (e.descripcionServicio.length > 0) {
+                if (e.descripcionEstadoVehiculo.includes('EN HORARIO')) {
+                    enHorario++
+                }else if (e.descripcionEstadoVehiculo.includes('ADELANTADO')) {
+                    adelantado++
+                }else if (e.descripcionEstadoVehiculo.includes('ATRASADO')) {
+                    atrasado++
                 }
-            }
-        
-            for (let j = 90; j < 101; j++) {
-                if (e.descripcionServicio.includes(j)) {
-                    totalCoches++
-                };
             }
         })
 
-        //DistaciaTipoka
+        //Coches
+        let totalCoches = 0
+        resultado[0].estadosActuales.map( e => {
+            if(e.descripcionServicio.length>0){
+                if (e.descripcionServicio.length === 1) {
+                    for (let i = 1; i < 10; i++) {
+                        if (e.descripcionServicio.includes(i)) {
+                            if(e.identificadorVehiculo.length === 5){
+                                totalCoches++
+                            }
+                        }
+                    }
+                }else{
+                    for (let i = 10; i < 40; i++) {
+                        if (e.descripcionServicio.includes(i)) {
+                            if(e.identificadorVehiculo.length === 5){
+                                totalCoches++
+                            }
+                        }
+                    }
+                    for (let j = 90; j < 101; j++) {
+                        if (e.descripcionServicio.includes(j)) {
+                            if(e.identificadorVehiculo.length === 5){
+                                totalCoches++
+                            }
+                        };
+                    }
+                }  
+            }
+        
+            
+        })
+
+        //CantidadCochesTipoka
         let cochesTipoka = 0
+        let horarioTipoka = 0
+        let adelantadoTipoka = 0
+        let atrasadoTipoka = 0
+
         const cTipoka = resultado[0].estadosActuales.filter( e => e.identificadorVehiculo.includes('T') )
         cTipoka.map( e => {
-            cochesTipoka++
+
+            if (e.descripcionServicio.length > 0) {
+                if (e.descripcionEstadoVehiculo.includes('EN HORARIO')) {
+                    horarioTipoka++
+                }else if (e.descripcionEstadoVehiculo.includes('ADELANTADO')) {
+                    adelantadoTipoka++
+                }else if (e.descripcionEstadoVehiculo.includes('ATRASADO')) {
+                    atrasadoTipoka++
+                }
+            }
+
+            if (e.descripcionServicio.length === 1) {
+                for (let i = 1; i < 10; i++) {
+                    if (e.descripcionServicio.includes(i)) {
+                        if(e.identificadorVehiculo.length === 5){
+                            cochesTipoka++
+                        }
+                    }
+                }
+            }else{
+                for (let i = 10; i < 40; i++) {
+                    if (e.descripcionServicio.includes(i)) {
+                        if(e.identificadorVehiculo.length === 5){
+                            cochesTipoka++
+                        }
+                    }
+                }
+                for (let j = 90; j < 101; j++) {
+                    if (e.descripcionServicio.includes(j)) {
+                        if(e.identificadorVehiculo.length === 5){
+                            cochesTipoka++
+                        }
+                    };
+                }
+            }
+           
          })
 
-        //DistaciaRosario
+        //CantidadCochesRosario
         let cochesRosario = 0
+        let horarioRosario = 0
+        let adelantadoRosario = 0
+        let atrasadoRosario = 0
         const cRosario = resultado[0].estadosActuales.filter( e => e.identificadorVehiculo.includes('R') )
         cRosario.map( e => {
-            cochesRosario++
+
+            if (e.descripcionServicio.length > 0) {
+                if (e.descripcionEstadoVehiculo.includes('EN HORARIO')) {
+                    horarioRosario++
+                }else if (e.descripcionEstadoVehiculo.includes('ADELANTADO')) {
+                    adelantadoRosario++
+                }else if (e.descripcionEstadoVehiculo.includes('ATRASADO')) {
+                    atrasadoRosario++
+                }
+            }
+
+            if (e.descripcionServicio.length === 1) {
+                for (let i = 1; i < 10; i++) {
+                    if (e.descripcionServicio.includes(i)) {
+                        if(e.identificadorVehiculo.length === 5){
+                            cochesRosario++
+                        }
+                    }
+                }
+            }else{
+                for (let i = 10; i < 40; i++) {
+                    if (e.descripcionServicio.includes(i)) {
+                        if(e.identificadorVehiculo.length === 5){
+                            cochesRosario++
+                        }
+                    }
+                }
+                for (let j = 90; j < 101; j++) {
+                    if (e.descripcionServicio.includes(j)) {
+                        if(e.identificadorVehiculo.length === 5){
+                            cochesRosario++
+                        }
+                    };
+                }
+            }
+            
          })
 
-        //DistaciaCasimiro
+        //CantidadCochesCasimiro
         let cocheCamisiro = 0
+        let horarioCamisiro = 0
+        let adelantadoCamisiro = 0
+        let atrasadoCamisiro = 0
         const cCasimiro = resultado[0].estadosActuales.filter( e => {
             if (!e.identificadorVehiculo.includes('R') & !e.identificadorVehiculo.includes('T')) {
                 return e.identificadorVehiculo
@@ -149,7 +266,41 @@ const getDistanciaDb = async (req, res) => {
 
         })
         cCasimiro.map( e => {
-            cocheCamisiro++
+
+            if (e.descripcionServicio.length > 0) {
+                if (e.descripcionEstadoVehiculo.includes('EN HORARIO')) {
+                    horarioCamisiro++
+                }else if (e.descripcionEstadoVehiculo.includes('ADELANTADO')) {
+                    adelantadoCamisiro++
+                }else if (e.descripcionEstadoVehiculo.includes('ATRASADO')) {
+                    atrasadoCamisiro++
+                }
+            }
+
+            if (e.descripcionServicio.length === 1) {
+                for (let i = 1; i < 10; i++) {
+                    if (e.descripcionServicio.includes(i)) {
+                        if(e.identificadorVehiculo.length === 5){
+                            cocheCamisiro++
+                        }
+                    }
+                }
+            }else{
+                for (let i = 10; i < 40; i++) {
+                    if (e.descripcionServicio.includes(i)) {
+                        if(e.identificadorVehiculo.length === 5){
+                            cocheCamisiro++
+                        }
+                    }
+                }
+                for (let j = 90; j < 101; j++) {
+                    if (e.descripcionServicio.includes(j)) {
+                        if(e.identificadorVehiculo.length === 5){
+                            cocheCamisiro++
+                        }
+                    };
+                }
+            }
          })
 
 
@@ -170,6 +321,32 @@ const getDistanciaDb = async (req, res) => {
                     Casimiro: Math.trunc(ditanciaCamisiro),
                     Rosario: Math.trunc(ditanciaRosario)
                 }
+            },
+            Estado: {
+                EnHorarios: {
+                    EnHorario: enHorario,
+                    Empresas:{
+                        Tipoka: horarioTipoka,
+                        Casimiro: horarioCamisiro,
+                        Rosario: horarioRosario
+                    },
+                },
+                Atrasados: {
+                    Atrasado: atrasado,
+                    Empresas:{
+                        Tipoka: atrasadoTipoka,
+                        Casimiro: atrasadoCamisiro,
+                        Rosario: atrasadoRosario
+                    },
+                },
+                Adelantados: {
+                    Adelantado: adelantado,
+                    Empresas:{
+                        Tipoka: adelantadoTipoka,
+                        Casimiro: adelantadoCamisiro,
+                        Rosario: adelantadoRosario
+                    },
+                },
             }
             
         }
